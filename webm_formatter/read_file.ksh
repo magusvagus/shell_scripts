@@ -1,25 +1,15 @@
 #!/bin/ksh
 
-rm /tmp/fpeg_test
-rm output.mp3
-mkfifo /tmp/fpeg_test
+# get duration
+duration=$(ffprobe -v quiet -show_entries format=duration -of csv=p=0 gothic.webm)
 
-total_duration=$(ffprobe -v quiet -show_entries format=duration -of csv=p=0 gothic.webm)
+# turn duration into int from float
+int=$(printf "%.0f" "$duration")  # Rounds to nearest integer
 
-ffmpeg -i gothic.webm -progress /tmp/fpeg_test -f mp3 output.mp3 &
+result=$(( int / 60 ))
 
-echo "test"
-tail -f /tmp/fpeg_test
+# prints minutes of video
+echo "$result"
 
-echo "test2"
-
-# while read line
-# do
-# 	if [[ $key == "out_time_ms" ]]; then
-# 	printf "LINE %s\n" "$line"
-# 	fi
-# done < /tmp/fpeg_test
-
-rm /tmp/fpeg_test
 
 
