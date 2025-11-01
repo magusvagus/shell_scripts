@@ -8,8 +8,7 @@ rm confrs.mp3  2> /dev/null
 
 input_file="rs.flac"
 file_path="$(pwd)/$input_file"
-#input_file="$(pwd)/notHere.flac"
-
+#input_file="$(pwd)/fakeErrorFile.flac"
 
 # get duration
 duration=$(ffprobe -v quiet -show_entries format=duration -of csv=p=0 "$input_file" 2> /dev/null)
@@ -17,7 +16,6 @@ duration=$(ffprobe -v quiet -show_entries format=duration -of csv=p=0 "$input_fi
 # turn $duration into an integer from float
 int=$(printf "%.0f" "$duration")  # Rounds to nearest integer
 minutes=$(( int / 60 ))
-
 
 if [[ -n "$duration" ]]; then
 	printf "%s lenght: %s min\n" "$input_file" "$minutes"
@@ -28,12 +26,12 @@ fi
 check=false
 file_num=0
 
+# do not move out of global scope, otherwise (i dont know why)
+# the cat command below, says that file not found.
 touch /tmp/progress.log
 
 function fp 
 {
-
-	
 	typeset _error=$(mktemp)
 
 	# Capture progress to a temporary file, then extract final speed
@@ -58,6 +56,10 @@ function fp
 }
 
 fp & 
+
+
+# if cat throws error, remove line "rm /tmp/progress.log"
+# below or above
 _time_left=$(cat "/tmp/progress.log" | grep speed | tail -n 1)
 
 # this works gives back just the seed rate
@@ -77,6 +79,7 @@ printf "\n-----------DONE---------------\n"
 
 # prints minutes of video
 rm /tmp/done_check.lock 2> /dev/null
+rm /tmp/progress.log
 exit 0
 
 
