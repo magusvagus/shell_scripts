@@ -6,7 +6,7 @@ rm /tmp/done_check.lock 2> /dev/null
 # for testing
 rm confrs.mp3  2> /dev/null
 
-input_file="./rs.flac"
+input_file="rs.flac"
 file_path="$(pwd)/$input_file"
 #input_file="$(pwd)/notHere.flac"
 
@@ -28,12 +28,16 @@ fi
 check=false
 file_num=0
 
+touch /tmp/progress.log
+
 function fp 
 {
+
+	
 	typeset _error=$(mktemp)
 
-	# only output stderr into _error file
-	ffmpeg -nostdin -loglevel error -i "$input_file" -c:a libmp3lame -q:a 0 confrs.mp3 2>$_error 1>/dev/null   
+	# Capture progress to a temporary file, then extract final speed
+	ffmpeg -i "$input_file" -c:a libmp3lame -q:a 0 confrs.mp3 -progress /tmp/progress.log -nostats -loglevel error 2>$_error
 
 	# catch error msg
 	if [[ -s "$_error" ]]; then
@@ -54,12 +58,18 @@ function fp
 }
 
 fp & 
+_time_left=$(cat "/tmp/progress.log" | grep speed | tail -n 1)
+
+# this works gives back just the seed rate
+_time_float=$(echo $_time_left | sed -E 's/.*speed=([0-9]*\.?[0-9]+)x.*/\1/')
 
 round=0
 while [[ ! -f "/tmp/done_check.lock" ]]; do
 	# check if there is no err file
 	if [[ ! -f "/tmp/err.lock" ]]; then
-		printf "\r working %d" "$round"
+		#printf "\r working %d" "$round"
+		printf "\rextracted speed: %s" "$_time_float"
+		sleep 1
 		((round++))
 	fi
 done
