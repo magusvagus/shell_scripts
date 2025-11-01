@@ -61,31 +61,32 @@ if [[ $PATH_TEST != $PATH_DIR ]]; then
 	fi
 fi
 
-# array of required directories
-set -A DIRECTORIES "formatted_files" "original_files" 
-set -A SUB_DIRECTORIES "flac" "mp3"
+# array of required directories and sub directories
+set -A DIRECTORIES "formatted_files" "original_files" "formatted_files/flac" "formatted_files/mp3"
 
 # TODO add array for subdirectories
 
 MISSING=false
+
 printf "\nScanning for required directories\n";
 for DIR in "${DIRECTORIES[@]}"; do
 	if [[ ! -e $DIR ]]; then
-		printf "%s\t-> not found\n" "$DIR"
+		printf "%-23s-> not found\n" "$DIR"
 		MISSING=true
 	fi
 done
 
+# this was made when there were initially more directories
+# TODO needs to be simplifies
 if [[ "$MISSING" == "true" ]]; then
 	printf "\nCreate missing directories? [y/n] "
 	read INPUT
 	if [[ $INPUT == "y" ]]; then
 
 		for DIR in "${DIRECTORIES[@]}"; do
-
 			if [[ ! -e $DIR ]]; then
-				mkdir $DIR
-				printf "%s\t-> created\n" "$DIR"
+				mkdir -p "$DIR"
+				printf "%-23s-> created\n" "$DIR"
 			fi
 		done
 
@@ -124,7 +125,7 @@ while ((LOOP == 0));do
 			# TODO add option for mp3
 	printf "\t q. Quit\n"
 	printf "\n"
-	printf "choce: "
+	printf "choice: "
 
 	read INPUT
 
