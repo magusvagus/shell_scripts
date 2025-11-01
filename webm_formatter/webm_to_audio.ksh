@@ -63,6 +63,8 @@ fi
 
 # array of required directories
 set -A DIRECTORIES "formatted_files" "original_files" 
+set -A SUB_DIRECTORIES "flac" "mp3"
+
 # TODO add array for subdirectories
 
 MISSING=false
