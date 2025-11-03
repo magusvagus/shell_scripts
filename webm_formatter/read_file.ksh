@@ -17,6 +17,7 @@ duration=$(ffprobe -v quiet -show_entries format=duration -of csv=p=0 "$input_fi
 int=$(printf "%.0f" "$duration")  # Rounds to nearest integer
 minutes=$(( int / 60 ))
 
+# catch duration error
 if [[ -n "$duration" ]]; then
 	printf "%s lenght: %s min\n" "$input_file" "$minutes"
 else
@@ -57,6 +58,8 @@ function fp
 
 fp & 
 
+# NOTE: This conversion below is quite slow, needs to be
+# improved
 
 # if cat throws error, remove line "rm /tmp/progress.log"
 # below or above
@@ -65,6 +68,7 @@ _time_left=$(cat "/tmp/progress.log" | grep speed | tail -n 1)
 # this works gives back just the seed rate
 _time_float=$(echo $_time_left | sed -E 's/.*speed=([0-9]*\.?[0-9]+)x.*/\1/')
 
+# TODO try -e to just check if file exists
 round=0
 while [[ ! -f "/tmp/done_check.lock" ]]; do
 	# check if there is no err file
