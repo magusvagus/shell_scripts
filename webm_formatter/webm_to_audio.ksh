@@ -1,21 +1,24 @@
 #!/bin/ksh
 
-#
 # NOTE CHECK OUT COPROCESSES IN KSH
 #
+
+# Check for running yt-dlp processes, in case a file is still downloading
+# throw ERR
 YT_DLP_PROCESS=$(ps aux | grep y[t]-dlp )
-SECOND_WORD=$(echo "$YT_DLP_PROCESS" | awk '{print $2}' )   
+SECOND_COLUMN=$(echo "$YT_DLP_PROCESS" | awk '{print $2}' )   
 
 if [[ -n "$YT_DLP_PROCESS" ]];then
-	printf "[ ERROR ] Can't proceed, yt-dlp process running. PID: %s\n" "$SECOND_WORD";
+	printf "[ ERROR ] Can't proceed, yt-dlp process running. PID: %s\n" "$SECOND_COLUMN";
 	exit 1;
 fi
 
+# TODO if script is run by default do NOT create directories and 
+# conf file. so it can be used in a quick manner if needed
 
 # check for config file with path
 PATH_TEST=$(pwd);
 
-# TODO add custom option
 if [[ ! -e formatter.conf ]]; then
 	printf "[ !! ] Default path not set\n"
 	printf "[ !! ] Config file not set\n"
@@ -64,8 +67,6 @@ fi
 # array of required directories and sub directories
 set -A DIRECTORIES "formatted_files" "original_files" "formatted_files/flac" "formatted_files/mp3"
 
-# TODO add array for subdirectories
-
 MISSING=false
 
 printf "\nScanning for required directories\n";
@@ -77,12 +78,11 @@ for DIR in "${DIRECTORIES[@]}"; do
 done
 
 # this was made when there were initially more directories
-# TODO needs to be simplifies
 if [[ "$MISSING" == "true" ]]; then
 	printf "\nCreate missing directories? [y/n] "
 	read INPUT
-	if [[ $INPUT == "y" ]]; then
 
+	if [[ $INPUT == "y" ]]; then
 		for DIR in "${DIRECTORIES[@]}"; do
 			if [[ ! -e $DIR ]]; then
 				mkdir -p "$DIR"
@@ -113,7 +113,6 @@ printf "\n[ Result ]\n\n";
 
 ANSWER=0
 LOOP=0
-
 
 while ((LOOP == 0));do
 	printf "%d .webm file/s detected.\n" "$WEBM_COUNT"
