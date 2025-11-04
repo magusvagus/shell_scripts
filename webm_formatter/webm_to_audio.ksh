@@ -137,7 +137,7 @@ while ((LOOP == 0));do
 		for FILE in original_files/*.webm; do
 
 			ffmpeg -i "$FILE" -c:a flac "${FILE%.webm}.flac";
-			mv *.webm formatted_files
+			mv *.flac formatted_files
 		done
 		((LOOP++));
 
