@@ -25,19 +25,36 @@ function time_perc
 {
 	# $1 -> total
 	# $2 -> current time
-	_time_percent=$(printf "%.6f / %.6f\n" "$2" "$1" | bc -l)
-	_time_percent2=$(printf "%.6f * 100\n" "$_time_percent" | bc -l)
+	typeset _time_percent=$(printf "%.6f / %.6f\n" "$2" "$1" | bc -l)
+	typeset _time_percent2=$(printf "%.6f * 100\n" "$_time_percent" | bc -l)
 	printf "%.0f\n" "$_time_percent2"
+}
+
+function bar_perc
+{
+	# $1 -> total
+	# $2 -> percent
+	typeset _bar_percent=$(printf "%.6f / 100\n" "$2" | bc -l)
+	typeset _bar_percent2=$(printf "%.6f * %.6f\n" "$_bar_percent" "$1" | bc -l)
+	printf "%.0f\n" "$_bar_percent2"
 }
 
 TIME=0
 
 duration_var=$(duration "$full_percent" "$conversion_rate")
 while true; do
-	printf "total duration:		 %s sec\n" "$duration_var"
-	printf "current time: 		 %s   sec\n" "$TIME"
+	printf "\n"
+	printf "total duration:		 %-03d sec\n" "$duration_var"
+	printf "current time: 		 %-03d sec\n" "$TIME"
 	time_percent=$(time_perc "$duration_var" "$TIME")
-	printf "current percent:	 %d %%\n" "$time_percent"
+	printf "current percent:	 %-03d %%\n" "$time_percent"
+
+	printf "\n"
+
+	printf "terminal with:		 %-03d char\n" "$terminal_with"
+	bar_percent=$(bar_perc "$terminal_with" "$time_percent")
+	printf "current percent:	 %-03d char\n" "$bar_percent"
+
 	((TIME++))
 	sleep 1
 done
