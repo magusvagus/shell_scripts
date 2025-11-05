@@ -15,7 +15,7 @@ i=0
 reverse=false
 symbol=">"
 
-printf "number of col: %s\n" "$X"
+#printf "number of col: %s\n" "$X"
 
 while true; do
 	sleep 0.001
@@ -40,3 +40,6 @@ while true; do
 		fi	
 	fi
 done   
+
+
+

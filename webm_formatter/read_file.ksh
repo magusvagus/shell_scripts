@@ -6,7 +6,7 @@ rm /tmp/done_check.lock 2> /dev/null
 # for testing
 rm confrs.mp3  2> /dev/null
 
-input_file="rs.flac"
+input_file="Unreal.flac"
 file_path="$(pwd)/$input_file"
 #input_file="$(pwd)/fakeErrorFile.flac"
 
@@ -14,8 +14,8 @@ file_path="$(pwd)/$input_file"
 duration=$(ffprobe -v quiet -show_entries format=duration -of csv=p=0 "$input_file" 2> /dev/null)
 
 # turn $duration into an integer from float
-int=$(printf "%.0f" "$duration")  # Rounds to nearest integer
-minutes=$(( int / 60 ))
+seconds=$(printf "%.0f" "$duration")  # Rounds to nearest integer
+minutes=$(( seconds / 60 ))
 
 # catch duration error
 if [[ -n "$duration" ]]; then
@@ -66,6 +66,7 @@ fp &
 _time_left=$(cat "/tmp/progress.log" | grep speed | tail -n 1)
 
 # this works gives back just the seed rate
+# returns float
 _time_float=$(echo $_time_left | sed -E 's/.*speed=([0-9]*\.?[0-9]+)x.*/\1/')
 
 # TODO try -e to just check if file exists
@@ -79,6 +80,7 @@ while [[ ! -f "/tmp/done_check.lock" ]]; do
 		((round++))
 	fi
 done
+
 printf "\n-----------DONE---------------\n"
 
 # prints minutes of video
