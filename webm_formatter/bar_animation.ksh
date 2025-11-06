@@ -1,21 +1,10 @@
 #!/bin/ksh
 
-# X=5
-#
-# while true; do
-# 	printf '\r %*s' "$X" '' | tr ' ' 'E'   
-# 	sleep 0.5
-# 	((X++))
-# done
-
 X=$(tput cols)
-# X=10
 result=""
 i=0
 reverse=false
 symbol=">"
-
-#printf "number of col: %s\n" "$X"
 
 while true; do
 	sleep 0.001

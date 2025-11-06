@@ -43,6 +43,22 @@ function bar_perc
 	printf "%.0f\n" "$_bar_percent_total"
 }
 
+function fill_bar
+{
+	typeset _number_of_loops
+	typeset _result
+	typeset _symbol
+
+	_number_of_loops="$1"
+	_result="$2"
+	_symbol="$3"
+
+	for i in $(seq 0 "$_number_of_loops"); do
+		_result="${_result}${_symbol}"   
+	done
+	printf "%s" "$_result"
+}
+
 # variables for testing purposes
 full_percent=393 # seconds
 printf "Amount of seconds: %d\n" "$full_percent"
@@ -53,22 +69,36 @@ printf "Conversion rate: %.2f\n" "$conversion_rate"
 terminal_with=$(tput cols)
 printf "terminal with: %d\n" "$terminal_with"
 
+result=""
+i=0
+symbol=">"
 TIME=0
 
 # main loop
 total_duration=$(duration "$full_percent" "$conversion_rate")
 while true; do
-	printf "\n"
-	printf "total duration:		 %-03d sec\n" "$total_duration"
-	printf "current time: 		 %-03d sec\n" "$TIME"
-	time_percent=$(time_perc "$total_duration" "$TIME")
-	printf "current percent:	 %-03d %%\n" "$time_percent"
+	if [[ "$TIME" -ne "$total_duration" ]]; then
 
-	printf "\n"
+		time_percent=$(time_perc "$total_duration" "$TIME")
+		bar_percent=$(bar_perc "$terminal_with" "$time_percent")
 
-	printf "terminal with:		 %-03d char\n" "$terminal_with"
-	bar_percent=$(bar_perc "$terminal_with" "$time_percent")
-	printf "current percent:	 %-03d char %%\n" "$bar_percent"
+		result=$(fill_bar "$bar_percent" "$result" "$symbol")
+		printf "\r%s" "$result"
+		result=""
+	else
+		printf "Done\n"
+		exit 0
+	fi
+
+	# printf "\n"
+	# printf "total duration:		 %-03d sec\n" "$total_duration"
+	# printf "current time: 		 %-03d sec\n" "$TIME"
+	# printf "current percent:	 %-03d %%\n" "$time_percent"
+	#
+	# printf "\n"
+	#
+	# printf "terminal with:		 %-03d char\n" "$terminal_with"
+	# printf "current percent:	 %-03d char %%\n" "$bar_percent"
 
 	((TIME++))
 	sleep 1
