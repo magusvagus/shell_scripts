@@ -53,7 +53,7 @@ function fill_bar
 	_result="$2"
 	_symbol="$3"
 
-	for i in $(seq 0 "$_number_of_loops"); do
+	for i in $(seq 1 "$_number_of_loops"); do
 		_result="${_result}${_symbol}"   
 	done
 	printf "%s" "$_result"
