@@ -69,12 +69,13 @@ conversion_rate=3.0
 printf "Conversion rate: %.2f\n" "$conversion_rate"
 
 # header to name the process bar
-header="[PROCESS]"
+header="[PROCESS] "
 
 # subtract header text from cols
 terminal_with=$(tput cols)
-terminal_with=$(printf "%s - ( %s - 1 )\n" "$terminal_with" "${#header}" | bc -l)
+terminal_with2=$(printf "%s - ( %s - 1 )\n" "$terminal_with" "${#header}" | bc -l)
 printf "terminal with: %d\n" "$terminal_with"
+printf "terminal with2: %d\n" "$terminal_with2"
 
 symbol="|"
 TIME=1

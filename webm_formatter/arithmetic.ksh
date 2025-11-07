@@ -14,5 +14,18 @@ else
    echo "a is not greater than b"
 fi   
 
+# basic operation
 
+numberOne=134
+numberTwo=22
+
+result=$(echo "3.5 + 2.1" | bc -l)
+
+let "result = numberOne + numberTwo"
+
+result=$((result * (2 + 2) + numberOne))
+
+(( result = result * 33 ))
+
+echo "$result"
 
