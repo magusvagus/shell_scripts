@@ -47,33 +47,43 @@ function bar_perc
 
 function draw_bar
 {
+	# experimental
+	# TODO move _terminal width out of function, and use it as a
+	# fucntion variable
 	typeset _number_of_loops
 	typeset _result
 	typeset _symbol
+	typeset _terminal_width
+	typeset _space
+	typeset _end
 
+	_terminal_width=$(tput cols)
 	_number_of_loops="$1"
 	_result="$2"
 	_symbol="$3"
+	_space=" "
+	_end="]"
 
 	for i in $(seq 1 "$_number_of_loops"); do
 		_result="${_result}${_symbol}"   
 	done
-	printf "%s" "$_result"
+
+	_terminal_width=$(printf "%s - %s -20\n" "$_terminal_width" "${#_result}" | bc -l)
+
+	for i in $(seq 1 "$_terminal_width"); do
+		_result="${_result}${_space}"
+	done
+
+	printf "%s" "${_result}${_end}"
 }
 
 # variables for testing purposes
-full_percent=393 # seconds
+full_percent=103 # seconds
 printf "Amount of seconds: %d\n" "$full_percent"
 
 conversion_rate=3.0
 printf "Conversion rate: %.2f\n" "$conversion_rate"
 
-# header to name the process bar
-header="[PROCESS] "
-
-# subtract header text from cols
-terminal_with=$(tput cols)
-terminal_with2=$(printf "%s - ( %s - 1 )\n" "$terminal_with" "${#header}" | bc -l)
 printf "terminal with: %d\n" "$terminal_with"
 printf "terminal with2: %d\n" "$terminal_with2"
 
@@ -85,8 +95,18 @@ total_duration=$(duration "$full_percent" "$conversion_rate")
 while true; do
 	if [[ "$TIME" -ne "$total_duration" ]]; then
 
+		# might be too much, but makes the bar dynamic
+		# based on the current window width
+		terminal_width=$(tput cols)
 		time_percent=$(time_perc "$total_duration" "$TIME")
-		bar_percent=$(bar_perc "$terminal_with" "$time_percent")
+
+		# header to name the process bar
+		header=$(printf "[ ffmpeg ][ %03s%% ][" "$time_percent")
+
+		# subtract header text from cols
+		terminal_width2=$(printf "%s - ( %s - 4 )\n" "$terminal_width" "${#header}" | bc -l)
+
+		bar_percent=$(bar_perc "$terminal_width2" "$time_percent")
 
 		result=$(draw_bar "$bar_percent" "$result" "$symbol")
 		printf "\r%s%s" "$header" "$result"
@@ -95,16 +115,6 @@ while true; do
 		printf "Done\n"
 		exit 0
 	fi
-
-	# printf "\n"
-	# printf "total duration:		 %-03d sec\n" "$total_duration"
-	# printf "current time: 		 %-03d sec\n" "$TIME"
-	# printf "current percent:	 %-03d %%\n" "$time_percent"
-	#
-	# printf "\n"
-	#
-	# printf "terminal with:		 %-03d char\n" "$terminal_with"
-	# printf "current percent:	 %-03d char %%\n" "$bar_percent"
 
 	((TIME++))
 	sleep 1
