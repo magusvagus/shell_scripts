@@ -1,8 +1,79 @@
 #!/bin/ksh
 
+# needs to be started in background -> &
+function format_file
+{
+	typeset _error
+	typeset _input_file
+
+	_error=$(mktemp)
+	_input_file="$1"
+
+	# Capture progress to a temporary file, then extract final speed
+	ffmpeg -i "$_input_file" -c:a libmp3lame -q:a 0 confrs.mp3 -progress /tmp/progress.log -nostats -loglevel error 2>$_error
+
+	# catch error msg
+	if [[ -s "$_error" ]]; then
+		printf "\n[ ERROR ] Could not convert file.\n[ ERROR ] ErrMsg: "
+		#cat "$_error"
+		sed '2,$s/^/ 		  /' "$_error"
+
+		touch /tmp/err.lock
+		sleep 2
+		rm /tmp/err.lock 2> /dev/null
+		return 1
+	else
+
+		touch /tmp/done_check.lock
+		sleep 2
+		rm /tmp/done_check.lock 2> /dev/null
+	fi
+}
+
+function print_conversion_speed
+{
+	typeset _extract_line
+	typeset _time_float
+
+	_extract_line=$(cat "/tmp/progress.log" | grep speed | tail -n 1)
+
+	# this works, gives back just the speed rate
+	# returns float
+	_time_float=$(echo $_extract_line | sed -E 's/.*speed=([0-9]*\.?[0-9]+)x.*/\1/')
+
+	printf "%s" "$_time_float"
+}
+
+function file_duration_lenght
+{
+	typeset _minutes
+	typeset _input_file
+	typeset _duration_float
+
+	_input_file="$1"
+
+	_duration_float=$(ffprobe -v quiet -show_entries format=duration -of csv=p=0 "$_input_file" 2> /dev/null)
+
+	# TODO FIX print only if err occurs
+	#
+	# turn $duration into an integer from float
+
+	# _minutes=$(printf "%s / 60\n" "$_duration_float" | bc -l)
+	# # catch duration error
+	# if [[ -n "$_duration_float" ]]; then
+	# 	printf "%s lenght: %.0f min\n" "$_input_file" "$_minutes"
+	# else
+	# 	printf "[ ERROR ] Could not define video lenght."
+	# 	return 2
+	# fi
+
+	# return
+	printf "%.0f" "$_duration_float" # Rounds to nearest integer
+}
+
 # calculate the final duration of the conversion
 # based on the file lenght in seconds and conversion rate
-function duration
+function converted_duration
 {
 	typeset _file_duration
 	typeset _conversion_rate
@@ -11,7 +82,7 @@ function duration
 	_file_duration="$1"
 	_conversion_rate="$2"
 
-	_final_duration=$(printf "%.0f / %.0f\n" "$_file_duration" "$_conversion_rate" | bc -l)
+	_final_duration=$(printf "%0.f / %0.f\n" "$_file_duration" "$_conversion_rate" | bc -l)
 	printf "%0.f" "$_final_duration"
 }
 
@@ -68,30 +139,49 @@ function draw_bar
 		_result="${_result}${_symbol}"   
 	done
 
-	_terminal_width=$(printf "%s - %s -20\n" "$_terminal_width" "${#_result}" | bc -l)
+	# TODO creates bug, and draws to much white spaces
+	#
+	# _terminal_width=$(printf "%s - %s -20\n" "$_terminal_width" "${#_result}" | bc -l)
+	#
+	# for i in $(seq 1 "$_terminal_width"); do
+	# 	_result="${_result}${_space}"
+	# done
 
-	for i in $(seq 1 "$_terminal_width"); do
-		_result="${_result}${_space}"
-	done
+	#printf "%s" "${_result}${_end}"
 
-	printf "%s" "${_result}${_end}"
+	printf "%s" "${_result}"
 }
 
-# variables for testing purposes
-full_percent=103 # seconds
-printf "Amount of seconds: %d\n" "$full_percent"
 
-conversion_rate=3.0
-printf "Conversion rate: %.2f\n" "$conversion_rate"
-
-printf "terminal with: %d\n" "$terminal_with"
-printf "terminal with2: %d\n" "$terminal_with2"
+input_file="Unreal.flac"
+file_path="$(pwd)/$input_file"
 
 symbol="|"
 TIME=1
 
+# remove leftover files, in case script crashed previously
+rm /tmp/done_check.lock 2> /dev/null
+
+# for testing
+rm confrs.mp3  2> /dev/null
+touch /tmp/progress.log
+
+
+# start conversion
+format_file "$input_file" & 
+printf "==== input file: %s\n" "$input_file"
+
+conversion_rate=$(print_conversion_speed)
+printf "==== conversion rate: %s\n" "$conversion_rate"
+
+file_duration=$(file_duration_lenght "$input_file")
+printf "==== file duration: %s\n" "$file_duration"
+
+total_duration=$(converted_duration "$file_duration" "$conversion_rate")
+# total_duration=333
+printf "==== total duration: %s\n" "$total_duration"
+
 # main loop
-total_duration=$(duration "$full_percent" "$conversion_rate")
 while true; do
 	if [[ "$TIME" -ne "$total_duration" ]]; then
 
