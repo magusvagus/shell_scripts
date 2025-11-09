@@ -9,6 +9,8 @@ function format_file
 	_error=$(mktemp)
 	_input_file="$1"
 
+	touch /tmp/progress
+
 	# Capture progress to a temporary file, then extract final speed
 	ffmpeg -i "$_input_file" -c:a libmp3lame -q:a 0 confrs.mp3 -progress /tmp/progress.log -nostats -loglevel error 2>$_error
 
@@ -27,6 +29,7 @@ function format_file
 		touch /tmp/done_check.lock
 		sleep 2
 		rm /tmp/done_check.lock 2> /dev/null
+		rm /tmp/progress 2> /dev/null
 	fi
 }
 
@@ -39,6 +42,8 @@ function print_conversion_speed
 
 	# this works, gives back just the speed rate
 	# returns float
+	# TODO BUG - sed sometimes extracts number with appended x ( 33x) instead of
+	# the number itself, needs fixing
 	_time_float=$(echo $_extract_line | sed -E 's/.*speed=([0-9]*\.?[0-9]+)x.*/\1/')
 
 	printf "%s" "$_time_float"
@@ -46,26 +51,20 @@ function print_conversion_speed
 
 function file_duration_lenght
 {
-	typeset _minutes
 	typeset _input_file
 	typeset _duration_float
+	typeset _error
 
 	_input_file="$1"
 
 	_duration_float=$(ffprobe -v quiet -show_entries format=duration -of csv=p=0 "$_input_file" 2> /dev/null)
 
-	# TODO FIX print only if err occurs
-	#
 	# turn $duration into an integer from float
 
-	# _minutes=$(printf "%s / 60\n" "$_duration_float" | bc -l)
-	# # catch duration error
-	# if [[ -n "$_duration_float" ]]; then
-	# 	printf "%s lenght: %.0f min\n" "$_input_file" "$_minutes"
-	# else
-	# 	printf "[ ERROR ] Could not define video lenght."
-	# 	return 2
-	# fi
+	# catch duration error
+	if [[ ! -n "$_duration_float" ]]; then
+		return 1
+	fi
 
 	# return
 	printf "%.0f" "$_duration_float" # Rounds to nearest integer
@@ -164,7 +163,7 @@ rm /tmp/done_check.lock 2> /dev/null
 
 # for testing
 rm confrs.mp3  2> /dev/null
-touch /tmp/progress.log
+#touch /tmp/progress.log
 
 
 # start conversion
@@ -176,6 +175,11 @@ printf "==== conversion rate: %s\n" "$conversion_rate"
 
 file_duration=$(file_duration_lenght "$input_file")
 printf "==== file duration: %s\n" "$file_duration"
+
+# catch error
+if [[ "$_duration_float" -eq -1 ]]; then
+	printf "[ ERROR ] Could not define video lenght."
+fi
 
 total_duration=$(converted_duration "$file_duration" "$conversion_rate")
 # total_duration=333
