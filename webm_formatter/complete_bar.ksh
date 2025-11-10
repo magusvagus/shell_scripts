@@ -38,13 +38,16 @@ function print_conversion_speed
 	typeset _extract_line
 	typeset _time_float
 
-	_extract_line=$(cat "/tmp/progress.log" | grep speed | tail -n 1)
+	# has to be checked in do-while loop for zero 
+	# due to a bug, this command sometimes returns 0
+	while true;do
+		_extract_line=$(cat "/tmp/progress.log" | grep speed | tail -n 1)
+		_time_float=$(echo $_extract_line | sed -n 's_.*=\([0-9]*\)\..*_\1_p')
 
-	# this works, gives back just the speed rate
-	# returns float
-	# TODO BUG - sed sometimes extracts number with appended x ( 33x) instead of
-	# the number itself, needs fixing
-	_time_float=$(echo $_extract_line | sed -E 's/.*speed=([0-9]*\.?[0-9]+)x.*/\1/')
+		if [[ _time_float -ne 0 ]];then
+			break
+		fi
+	done
 
 	printf "%s" "$_time_float"
 }
@@ -118,7 +121,7 @@ function bar_perc
 function draw_bar
 {
 	# experimental
-	# TODO move _terminal width out of function, and use it as a
+	# TODO move _terminal_width out of function, and use it as a
 	# fucntion variable
 	typeset _number_of_loops
 	typeset _result
@@ -198,6 +201,7 @@ while true; do
 		header=$(printf "[ ffmpeg ][ %03s%% ][" "$time_percent")
 
 		# subtract header text from cols
+		# TODO extract into draw_bar function
 		terminal_width2=$(printf "%s - ( %s - 4 )\n" "$terminal_width" "${#header}" | bc -l)
 
 		bar_percent=$(bar_perc "$terminal_width2" "$time_percent")

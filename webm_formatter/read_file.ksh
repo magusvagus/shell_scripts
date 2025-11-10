@@ -86,7 +86,8 @@ function print_conversion_speed
 
 	# this works, gives back just the speed rate
 	# returns float
-	_time_float=$(echo $_extract_line | sed -E 's/.*speed=([0-9]*\.?[0-9]+)x.*/\1/')
+	_time_float=$(echo $_extract_line | sed -n 's_.*=\([0-9]*\)\..*_\1_p')
+	#_time_float=$(echo $_extract_line | grep -o '[0-9]*')
 
 	printf "%s" "$_time_float"
 }
