@@ -40,11 +40,11 @@ function print_conversion_speed
 
 	# has to be checked in do-while loop for zero 
 	# due to a bug, this command sometimes returns 0
-	while true;do
+	while true; do
 		_extract_line=$(cat "/tmp/progress.log" | grep speed | tail -n 1)
 		_time_float=$(echo $_extract_line | sed -n 's_.*=\([0-9]*\)\..*_\1_p')
 
-		if [[ _time_float -ne 0 ]];then
+		if [[ _time_float -ne 0 ]]; then
 			break
 		fi
 	done
@@ -137,7 +137,7 @@ function draw_bar
 	_space=" "
 	_end="]"
 
-	for i in $(seq 1 "$_number_of_loops"); do
+	for i in $(seq 0 "$_number_of_loops"); do
 		_result="${_result}${_symbol}"   
 	done
 
@@ -159,7 +159,7 @@ input_file="Unreal.flac"
 file_path="$(pwd)/$input_file"
 
 symbol="|"
-TIME=1
+TIME=-1
 
 # remove leftover files, in case script crashed previously
 rm /tmp/done_check.lock 2> /dev/null
@@ -180,7 +180,7 @@ file_duration=$(file_duration_lenght "$input_file")
 printf "==== file duration: %s\n" "$file_duration"
 
 # catch error
-if [[ "$_duration_float" -eq -1 ]]; then
+if [[ "$_duration_float" -eq 1 ]]; then
 	printf "[ ERROR ] Could not define video lenght."
 fi
 
@@ -191,7 +191,7 @@ printf "==== total duration: %s\n" "$total_duration"
 # main loop
 while true; do
 	if [[ "$TIME" -ne "$total_duration" ]]; then
-
+	((TIME++))
 		# might be too much, but makes the bar dynamic
 		# based on the current window width
 		terminal_width=$(tput cols)
@@ -202,7 +202,7 @@ while true; do
 
 		# subtract header text from cols
 		# TODO extract into draw_bar function
-		terminal_width2=$(printf "%s - ( %s - 4 )\n" "$terminal_width" "${#header}" | bc -l)
+		terminal_width2=$(printf "%d - %d - 1\n" "$terminal_width" "${#header}" | bc -l)
 
 		bar_percent=$(bar_perc "$terminal_width2" "$time_percent")
 
@@ -214,7 +214,6 @@ while true; do
 		exit 0
 	fi
 
-	((TIME++))
 	sleep 1
 done
 
