@@ -25,7 +25,6 @@ function format_file
 		rm /tmp/err.lock 2> /dev/null
 		return 1
 	else
-
 		touch /tmp/done_check.lock
 		sleep 2
 		rm /tmp/done_check.lock 2> /dev/null
@@ -171,6 +170,9 @@ rm confrs.mp3  2> /dev/null
 
 # start conversion
 format_file "$input_file" & 
+
+
+# debug information
 printf "==== input file: %s\n" "$input_file"
 
 conversion_rate=$(print_conversion_speed)
@@ -179,36 +181,52 @@ printf "==== conversion rate: %s\n" "$conversion_rate"
 file_duration=$(file_duration_lenght "$input_file")
 printf "==== file duration: %s\n" "$file_duration"
 
+
 # catch error
 if [[ "$_duration_float" -eq 1 ]]; then
 	printf "[ ERROR ] Could not define video lenght."
 fi
 
-total_duration=$(converted_duration "$file_duration" "$conversion_rate")
-# total_duration=333
+#total_duration=$(converted_duration "$file_duration" "$conversion_rate")
+total_duration=50
 printf "==== total duration: %s\n" "$total_duration"
 
 # main loop
 while true; do
 	if [[ "$TIME" -ne "$total_duration" ]]; then
-	((TIME++))
-		# might be too much, but makes the bar dynamic
-		# based on the current window width
-		terminal_width=$(tput cols)
-		time_percent=$(time_perc "$total_duration" "$TIME")
+		# check if process finished early
+		if [[ ! -e "/tmp/done_check.lock" ]];then
+			((TIME++))
+			# might be too much, but makes the bar dynamic
+			# based on the current window width
+			terminal_width=$(tput cols)
+			time_percent=$(time_perc "$total_duration" "$TIME")
 
-		# header to name the process bar
-		header=$(printf "[ ffmpeg ][ %03s%% ][" "$time_percent")
+			# header to name the process bar
+			header=$(printf "[ ffmpeg ][ %03s%% ][" "$time_percent")
 
-		# subtract header text from cols
-		# TODO extract into draw_bar function
-		terminal_width2=$(printf "%d - %d - 1\n" "$terminal_width" "${#header}" | bc -l)
+			# subtract header text from cols
+			# TODO extract into draw_bar function
+			terminal_width2=$(printf "%d - %d - 1\n" "$terminal_width" "${#header}" | bc -l)
 
-		bar_percent=$(bar_perc "$terminal_width2" "$time_percent")
+			bar_percent=$(bar_perc "$terminal_width2" "$time_percent")
 
-		result=$(draw_bar "$bar_percent" "$result" "$symbol")
-		printf "\r%s%s" "$header" "$result"
-		result=""
+			result=$(draw_bar "$bar_percent" "$result" "$symbol")
+			printf "\r%s%s" "$header" "$result"
+			result=""
+		else
+			# if program finished early set bar to 100
+			# draw and finish
+			TIME=$total_duration
+			time_percent=100
+			header=$(printf "[ ffmpeg ][ %03s%% ][" "$time_percent")
+			bar_percent=$(bar_perc "$terminal_width2" "$time_percent")
+			result=$(draw_bar "$bar_percent" "$result" "$symbol")
+			printf "\r%s%s" "$header" "$result"
+			result=""
+			printf "Done\n"
+			exit 0
+		fi
 	else
 		printf "Done\n"
 		exit 0
