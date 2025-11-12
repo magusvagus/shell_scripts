@@ -213,8 +213,11 @@ while true; do
 
 			result=$(draw_bar "$bar_percent" "$result" "$symbol")
 			printf "\r%s%s" "$header" "$result"
+			# reset bar
+			tput el
 			result=""
 		else
+			# TODO this can be put in a function
 			# if program finished early set bar to 100
 			# draw and finish
 			TIME=$total_duration
@@ -223,9 +226,10 @@ while true; do
 			bar_percent=$(bar_perc "$terminal_width2" "$time_percent")
 			result=$(draw_bar "$bar_percent" "$result" "$symbol")
 			printf "\r%s%s" "$header" "$result"
+
+			# reset bar
+			tput el
 			result=""
-			printf "Done\n"
-			exit 0
 		fi
 	else
 		printf "Done\n"
