@@ -165,7 +165,6 @@ rm /tmp/done_check.lock 2> /dev/null
 
 # for testing
 rm confrs.mp3  2> /dev/null
-#touch /tmp/progress.log
 
 
 # start conversion
@@ -187,8 +186,7 @@ if [[ "$_duration_float" -eq 1 ]]; then
 	printf "[ ERROR ] Could not define video lenght."
 fi
 
-#total_duration=$(converted_duration "$file_duration" "$conversion_rate")
-total_duration=50
+total_duration=$(converted_duration "$file_duration" "$conversion_rate")
 printf "==== total duration: %s\n" "$total_duration"
 
 # main loop
