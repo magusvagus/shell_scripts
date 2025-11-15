@@ -120,24 +120,28 @@ function bar_perc
 function draw_bar
 {
 	# experimental
-	# TODO move _terminal_width out of function, and use it as a
 	# fucntion variable
-	typeset _number_of_loops
-	typeset _result
-	typeset _symbol
+	typeset _bar_percent
 	typeset _terminal_width
+	typeset _symbol
+	typeset _bar
 	typeset _space
 	typeset _end
+	typeset _header
+	typeset _bar_null_point
 
-	_terminal_width=$(tput cols)
-	_number_of_loops="$1"
-	_result="$2"
-	_symbol="$3"
+	_bar_percent="$1"
+	_symbol="$2"
+	_terminal_width="$3"
+
+	_bar_null_point=""
 	_space=" "
 	_end="]"
+	#_header=$(printf "[ ffmpeg ][ %03s%% ][" "$_bar_percent")
+	_header="((testing))"
 
-	for i in $(seq 0 "$_number_of_loops"); do
-		_result="${_result}${_symbol}"   
+	for i in $(seq 0 $_bar_percent); do
+		_bar="${_bar_null_point}${_symbol}"   
 	done
 
 	# TODO creates bug, and draws to much white spaces
@@ -149,8 +153,12 @@ function draw_bar
 	# done
 
 	#printf "%s" "${_result}${_end}"
+	_complete_bar="${_header}${_bar}"
 
-	printf "%s" "${_result}"
+	printf "%s" "$_bar"
+	# reset bar
+	tput el
+	_complete_bar=""
 }
 
 
@@ -199,35 +207,18 @@ while true; do
 			# based on the current window width
 			terminal_width=$(tput cols)
 			time_percent=$(time_perc "$total_duration" "$TIME")
+			bar_percent=$(bar_perc "$terminal_width" "$time_percent")
 
-			# header to name the process bar
-			header=$(printf "[ ffmpeg ][ %03s%% ][" "$time_percent")
+			draw_bar "$bar_percent" "$symbol" "$terminal_width" 
 
-			# subtract header text from cols
-			# TODO extract into draw_bar function
-			terminal_width2=$(printf "%d - %d - 1\n" "$terminal_width" "${#header}" | bc -l)
-
-			bar_percent=$(bar_perc "$terminal_width2" "$time_percent")
-
-			result=$(draw_bar "$bar_percent" "$result" "$symbol")
-			printf "\r%s%s" "$header" "$result"
-			# reset bar
-			tput el
-			result=""
 		else
 			# TODO this can be put in a function
 			# if program finished early set bar to 100
 			# draw and finish
 			TIME=$total_duration
 			time_percent=100
-			header=$(printf "[ ffmpeg ][ %03s%% ][" "$time_percent")
 			bar_percent=$(bar_perc "$terminal_width2" "$time_percent")
-			result=$(draw_bar "$bar_percent" "$result" "$symbol")
-			printf "\r%s%s" "$header" "$result"
-
-			# reset bar
-			tput el
-			result=""
+			draw_bar "$bar_percent" "$symbol" "$terminal_width"
 		fi
 	else
 		printf "Done\n"
