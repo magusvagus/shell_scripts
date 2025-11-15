@@ -134,14 +134,13 @@ function draw_bar
 	_symbol="$2"
 	_terminal_width="$3"
 
-	_bar_null_point=""
+	_bar=""
 	_space=" "
 	_end="]"
-	#_header=$(printf "[ ffmpeg ][ %03s%% ][" "$_bar_percent")
-	_header="((testing))"
+	_header=$(printf "[ ffmpeg ][ %03s%% ][" "$_bar_percent")
 
 	for i in $(seq 0 $_bar_percent); do
-		_bar="${_bar_null_point}${_symbol}"   
+		_bar="${_bar}${_symbol}"   
 	done
 
 	# TODO creates bug, and draws to much white spaces
@@ -153,12 +152,10 @@ function draw_bar
 	# done
 
 	#printf "%s" "${_result}${_end}"
-	_complete_bar="${_header}${_bar}"
 
-	printf "%s" "$_bar"
+	printf "\r%s%s" "$_header" "$_bar"
 	# reset bar
 	tput el
-	_complete_bar=""
 }
 
 
