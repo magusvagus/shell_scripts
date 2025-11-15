@@ -128,12 +128,11 @@ function draw_bar
 	typeset _space
 	typeset _end
 	typeset _header
-	typeset _bar_null_point
 
 	_bar_percent="$1"
-	_symbol="$2"
 	_terminal_width="$3"
 
+	_symbol="|"
 	_bar=""
 	_space=" "
 	_end="]"
@@ -162,7 +161,6 @@ function draw_bar
 input_file="Unreal.flac"
 file_path="$(pwd)/$input_file"
 
-symbol="|"
 TIME=-1
 
 # remove leftover files, in case script crashed previously
