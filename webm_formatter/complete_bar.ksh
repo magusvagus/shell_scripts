@@ -130,13 +130,14 @@ function draw_bar
 	typeset _end
 
 	_terminal_width="$1"
-	_terminal_width2="$2"
+	_header="$2"
 	_time_percent="$3"
 	_result=""
 	_space=" "
 	_end="]"
 	_symbol="|"
 
+	_terminal_width2=$(printf "%d - %d - 1\n" "$_terminal_width" "${#_header}" | bc -l)
 	_bar_characters=$(bar_perc "$_terminal_width2" "$_time_percent")
 
 	for i in $(seq 0 "$_bar_characters"); do
@@ -205,8 +206,7 @@ while true; do
 			time_percent=$(time_perc "$total_duration" "$TIME")
 			# header to name the process bar
 			header=$(printf "[ ffmpeg ][ %03s%% ][" "$time_percent")
-			terminal_width2=$(printf "%d - %d - 1\n" "$terminal_width" "${#header}" | bc -l)
-			result=$(draw_bar "$terminal_width" "$terminal_width2" "$time_percent")
+			result=$(draw_bar "$terminal_width" "$header" "$time_percent")
 			printf "\r%s%s" "$header" "$result"
 			# reset bar
 			tput el
@@ -217,7 +217,7 @@ while true; do
 			TIME=$total_duration
 			time_percent=100
 			header=$(printf "[ ffmpeg ][ %03s%% ][" "$time_percent")
-			result=$(draw_bar "$terminal_width" "$terminal_width2" "$time_percent")
+			result=$(draw_bar "$terminal_width" "$header" "$time_percent")
 			printf "\r%s%s" "$header" "$result"
 
 			# reset bar
