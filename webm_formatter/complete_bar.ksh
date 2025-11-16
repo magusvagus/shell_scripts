@@ -129,13 +129,13 @@ function draw_bar
 	typeset _space
 	typeset _end
 
-	_terminal_width="$1"
-	_time_percent="$2"
+	_time_percent="$1"
 	_result=""
 	_space=" "
 	_end="]"
 	_symbol="|"
 
+	_terminal_width=$(tput cols)
 	_header=$(printf "[ ffmpeg ][ %03s%% ][" "$_time_percent")
 	_terminal_width2=$(printf "%d - %d - 1\n" "$_terminal_width" "${#_header}" | bc -l)
 	_bar_characters=$(bar_perc "$_terminal_width2" "$_time_percent")
@@ -154,7 +154,11 @@ function draw_bar
 
 	#printf "%s" "${_result}${_end}"
 
+
 	printf "\r%s" "${_header}${_result}"
+
+	# reset bar
+	tput el
 }
 
 
@@ -201,24 +205,17 @@ while true; do
 		# check if process finished early
 		if [[ ! -e "/tmp/done_check.lock" ]];then
 			((TIME++))
-			# might be too much, but makes the bar dynamic
-			# based on the current window width
-			terminal_width=$(tput cols)
+			# get current window width
 			time_percent=$(time_perc "$total_duration" "$TIME")
 
-			draw_bar "$terminal_width" "$time_percent"
-			# reset bar
-			tput el
+			draw_bar "$time_percent"
 		else
 			# TODO this can be put in a function
 			# if program finished early set bar to 100
 			# draw and finish
 			TIME=$total_duration
 			time_percent=100
-			draw_bar "$terminal_width" "$time_percent"
-
-			# reset bar
-			tput el
+			draw_bar "$time_percent"
 		fi
 	else
 		printf "Done\n"
