@@ -154,7 +154,7 @@ function draw_bar
 
 	#printf "%s" "${_result}${_end}"
 
-	printf "%s" "${_header}${_result}"
+	printf "\r%s" "${_header}${_result}"
 }
 
 
@@ -205,9 +205,8 @@ while true; do
 			# based on the current window width
 			terminal_width=$(tput cols)
 			time_percent=$(time_perc "$total_duration" "$TIME")
-			# header to name the process bar
-			result=$(draw_bar "$terminal_width" "$time_percent")
-			printf "\r%s%s" "$header" "$result"
+
+			draw_bar "$terminal_width" "$time_percent"
 			# reset bar
 			tput el
 		else
@@ -216,8 +215,7 @@ while true; do
 			# draw and finish
 			TIME=$total_duration
 			time_percent=100
-			result=$(draw_bar "$terminal_width" "$time_percent")
-			printf "\r%s%s" "$header" "$result"
+			draw_bar "$terminal_width" "$time_percent"
 
 			# reset bar
 			tput el
