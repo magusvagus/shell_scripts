@@ -130,13 +130,13 @@ function draw_bar
 	typeset _end
 
 	_terminal_width="$1"
-	_header="$2"
-	_time_percent="$3"
+	_time_percent="$2"
 	_result=""
 	_space=" "
 	_end="]"
 	_symbol="|"
 
+	_header=$(printf "[ ffmpeg ][ %03s%% ][" "$_time_percent")
 	_terminal_width2=$(printf "%d - %d - 1\n" "$_terminal_width" "${#_header}" | bc -l)
 	_bar_characters=$(bar_perc "$_terminal_width2" "$_time_percent")
 
@@ -154,7 +154,7 @@ function draw_bar
 
 	#printf "%s" "${_result}${_end}"
 
-	printf "%s" "${_result}"
+	printf "%s" "${_header}${_result}"
 }
 
 
@@ -190,8 +190,9 @@ if [[ "$_duration_float" -eq 1 ]]; then
 	printf "[ ERROR ] Could not define video lenght."
 fi
 
-#total_duration=$(converted_duration "$file_duration" "$conversion_rate")
-total_duration=50
+# TODO merge with file duration ,conversion rate
+total_duration=$(converted_duration "$file_duration" "$conversion_rate")
+#total_duration=50
 printf "==== total duration: %s\n" "$total_duration"
 
 # main loop
@@ -205,8 +206,7 @@ while true; do
 			terminal_width=$(tput cols)
 			time_percent=$(time_perc "$total_duration" "$TIME")
 			# header to name the process bar
-			header=$(printf "[ ffmpeg ][ %03s%% ][" "$time_percent")
-			result=$(draw_bar "$terminal_width" "$header" "$time_percent")
+			result=$(draw_bar "$terminal_width" "$time_percent")
 			printf "\r%s%s" "$header" "$result"
 			# reset bar
 			tput el
@@ -216,8 +216,7 @@ while true; do
 			# draw and finish
 			TIME=$total_duration
 			time_percent=100
-			header=$(printf "[ ffmpeg ][ %03s%% ][" "$time_percent")
-			result=$(draw_bar "$terminal_width" "$header" "$time_percent")
+			result=$(draw_bar "$terminal_width" "$time_percent")
 			printf "\r%s%s" "$header" "$result"
 
 			# reset bar
