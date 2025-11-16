@@ -130,11 +130,11 @@ function draw_bar
 	typeset _end
 
 	_number_of_loops="$1"
-	_symbol="$2"
 	_terminal_width="$3"
 	_result=""
 	_space=" "
 	_end="]"
+	_symbol="|"
 
 	for i in $(seq 0 "$_number_of_loops"); do
 		_result="${_result}${_symbol}"   
@@ -157,7 +157,6 @@ function draw_bar
 input_file="Unreal.flac"
 file_path="$(pwd)/$input_file"
 
-symbol="|"
 TIME=-1
 
 # remove leftover files, in case script crashed previously
@@ -211,7 +210,7 @@ while true; do
 
 			bar_percent=$(bar_perc "$terminal_width2" "$time_percent")
 
-			result=$(draw_bar "$bar_percent" "$symbol" "$terminal_width")
+			result=$(draw_bar "$bar_percent" "$terminal_width")
 			printf "\r%s%s" "$header" "$result"
 			# reset bar
 			tput el
@@ -223,7 +222,7 @@ while true; do
 			time_percent=100
 			header=$(printf "[ ffmpeg ][ %03s%% ][" "$time_percent")
 			bar_percent=$(bar_perc "$terminal_width2" "$time_percent")
-			result=$(draw_bar "$bar_percent" "$symbol")
+			result=$(draw_bar "$bar_percent" "$terminal_width")
 			printf "\r%s%s" "$header" "$result"
 
 			# reset bar
