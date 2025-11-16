@@ -119,29 +119,36 @@ function bar_perc
 
 function draw_bar
 {
-	# experimental
-	# TODO move _terminal_width out of function, and use it as a
-	# fucntion variable
-	typeset _bar_characters
-	typeset _result
-	typeset _symbol
+	typeset _time_percent
 	typeset _terminal_width
+	typeset _header
+	typeset _max_bar_length
+	typeset _current_bar_length
+	typeset _bar
 	typeset _space
+	typeset _symbol
 	typeset _end
 
+	# get current time percentage
 	_time_percent="$1"
-	_result=""
-	_space=" "
-	_end="]"
-	_symbol="|"
 
-	_terminal_width=$(tput cols)
+	# bar elements
 	_header=$(printf "[ ffmpeg ][ %03s%% ][" "$_time_percent")
-	_terminal_width2=$(printf "%d - %d - 1\n" "$_terminal_width" "${#_header}" | bc -l)
-	_bar_characters=$(bar_perc "$_terminal_width2" "$_time_percent")
+	_bar=""
+	_space=" "
+	_symbol="|"
+	_end="]"
 
-	for i in $(seq 0 "$_bar_characters"); do
-		_result="${_result}${_symbol}"   
+	# bar calculation
+	_terminal_width=$(tput cols)
+	_max_bar_length=$(printf "%d - %d - 1\n" "$_terminal_width" "${#_header}" | bc -l)
+	_current_bar_length=$(bar_perc "$_max_bar_length" "$_time_percent")
+
+	# draw bar
+	
+	# append space char N times to _bar
+	for i in $(seq 0 "$_current_bar_length"); do
+		_bar="${_bar}${_symbol}"   
 	done
 
 	# TODO creates bug, and draws to much white spaces
@@ -155,10 +162,8 @@ function draw_bar
 	#printf "%s" "${_result}${_end}"
 
 
-	printf "\r%s" "${_header}${_result}"
-
-	# reset bar
-	tput el
+	printf "\r%s" "${_header}${_bar}" # print final bar
+	tput el # reset bar/ clean buffer
 }
 
 
@@ -207,10 +212,8 @@ while true; do
 			((TIME++))
 			# get current window width
 			time_percent=$(time_perc "$total_duration" "$TIME")
-
 			draw_bar "$time_percent"
 		else
-			# TODO this can be put in a function
 			# if program finished early set bar to 100
 			# draw and finish
 			TIME=$total_duration
