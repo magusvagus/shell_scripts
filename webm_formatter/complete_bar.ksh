@@ -122,21 +122,24 @@ function draw_bar
 	# experimental
 	# TODO move _terminal_width out of function, and use it as a
 	# fucntion variable
-	typeset _number_of_loops
+	typeset _bar_characters
 	typeset _result
 	typeset _symbol
 	typeset _terminal_width
 	typeset _space
 	typeset _end
 
-	_number_of_loops="$1"
-	_terminal_width="$3"
+	_terminal_width="$1"
+	_terminal_width2="$2"
+	_time_percent="$3"
 	_result=""
 	_space=" "
 	_end="]"
 	_symbol="|"
 
-	for i in $(seq 0 "$_number_of_loops"); do
+	_bar_characters=$(bar_perc "$_terminal_width2" "$_time_percent")
+
+	for i in $(seq 0 "$_bar_characters"); do
 		_result="${_result}${_symbol}"   
 	done
 
@@ -200,17 +203,10 @@ while true; do
 			# based on the current window width
 			terminal_width=$(tput cols)
 			time_percent=$(time_perc "$total_duration" "$TIME")
-
 			# header to name the process bar
 			header=$(printf "[ ffmpeg ][ %03s%% ][" "$time_percent")
-
-			# subtract header text from cols
-			# TODO extract into draw_bar function
 			terminal_width2=$(printf "%d - %d - 1\n" "$terminal_width" "${#header}" | bc -l)
-
-			bar_percent=$(bar_perc "$terminal_width2" "$time_percent")
-
-			result=$(draw_bar "$bar_percent" "$terminal_width")
+			result=$(draw_bar "$terminal_width" "$terminal_width2" "$time_percent")
 			printf "\r%s%s" "$header" "$result"
 			# reset bar
 			tput el
@@ -221,8 +217,7 @@ while true; do
 			TIME=$total_duration
 			time_percent=100
 			header=$(printf "[ ffmpeg ][ %03s%% ][" "$time_percent")
-			bar_percent=$(bar_perc "$terminal_width2" "$time_percent")
-			result=$(draw_bar "$bar_percent" "$terminal_width")
+			result=$(draw_bar "$terminal_width" "$terminal_width2" "$time_percent")
 			printf "\r%s%s" "$header" "$result"
 
 			# reset bar
