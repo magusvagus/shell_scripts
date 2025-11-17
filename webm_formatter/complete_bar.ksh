@@ -79,11 +79,14 @@ function converted_duration
 	typeset _file_duration
 	typeset _conversion_rate
 	typeset _final_duration
+	typeset _input_file
 
-	_file_duration="$1"
+	_input_file="$1"
+	_file_duration=$(file_duration_lenght "$_input_file")
 	_conversion_rate="$2"
 
 	_final_duration=$(printf "%0.f / %0.f\n" "$_file_duration" "$_conversion_rate" | bc -l)
+
 	printf "%0.f" "$_final_duration"
 }
 
@@ -194,14 +197,13 @@ file_duration=$(file_duration_lenght "$input_file")
 printf "==== file duration: %s\n" "$file_duration"
 
 
-# catch error
-if [[ "$_duration_float" -eq 1 ]]; then
-	printf "[ ERROR ] Could not define video lenght."
-fi
+# # catch error
+# if [[ "$_duration_float" -eq 1 ]]; then
+# 	printf "[ ERROR ] Could not define video lenght."
+# fi
 
-# TODO merge with file duration ,conversion rate
-total_duration=$(converted_duration "$file_duration" "$conversion_rate")
-#total_duration=50
+converted_duration "$input_file" "$conversion_rate"
+total_duration=$(converted_duration "$input_file" "$conversion_rate")
 printf "==== total duration: %s\n" "$total_duration"
 
 # main loop
