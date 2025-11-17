@@ -32,23 +32,24 @@ function format_flac_to_mp3
 	fi
 }
 
-function print_conversion_speed
+function get_conversion_speed
 {
 	typeset _extract_line
-	typeset _time_float
+	typeset _conversion_rate
 
 	# has to be checked in do-while loop for zero 
-	# due to a bug, this command sometimes returns 0
+	# due to a bug/ race condition, as this command sometimes 
+	# returns 0 on first run
 	while true; do
 		_extract_line=$(cat "/tmp/progress.log" | grep speed | tail -n 1)
-		_time_float=$(echo $_extract_line | sed -n 's_.*=\([0-9]*\)\..*_\1_p')
+		_conversion_rate=$(echo $_extract_line | sed -n 's_.*=\([0-9]*\)\..*_\1_p')
 
-		if [[ _time_float -ne 0 ]]; then
+		if [[ _conversion_rate -ne 0 ]]; then
 			break
 		fi
 	done
 
-	printf "%s" "$_time_float"
+	printf "%s" "$_conversion_rate"
 }
 
 function file_duration_lenght
@@ -82,7 +83,7 @@ function converted_duration
 	typeset _input_file
 
 	_input_file="$1"
-	_conversion_rate=$(print_conversion_speed)
+	_conversion_rate=$(get_conversion_speed)
 	_file_duration=$(file_duration_lenght "$_input_file")
 
 	_final_duration=$(printf "%0.f / %0.f\n" "$_file_duration" "$_conversion_rate" | bc -l)
@@ -185,8 +186,6 @@ rm confrs.mp3  2> /dev/null
 
 # start conversion
 format_flac_to_mp3 "$input_file" & 
-
-
 
 
 # # catch error
