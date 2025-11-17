@@ -15,6 +15,7 @@ function format_flac_to_mp3
 	ffmpeg -i "$_input_file" -c:a libmp3lame -q:a 0 confrs.mp3 -progress /tmp/progress.log -nostats -loglevel error 2>$_error
 
 	# catch error msg
+	# else confirm end of conversion with temp done_check.lock file
 	if [[ -s "$_error" ]]; then
 		printf "\n[ ERROR ] Could not convert file.\n[ ERROR ] ErrMsg: "
 		# add cosmetic tabs, to the error messages for readability
@@ -32,7 +33,7 @@ function format_flac_to_mp3
 	fi
 }
 
-function get_conversion_speed
+function get_conversion_rate
 {
 	typeset _extract_line
 	typeset _conversion_rate
@@ -72,9 +73,9 @@ function get_file_duration
 	printf "%.0f" "$_file_duration" # Rounds to nearest integer
 }
 
-# calculate the final duration of the conversion
+# calculate the final duration of the conversion process
 # based on the file lenght in seconds and conversion rate
-function converted_duration
+function get_converted_duration
 {
 	typeset _file_duration
 	typeset _conversion_rate
@@ -82,11 +83,12 @@ function converted_duration
 	typeset _input_file
 
 	_input_file="$1"
-	_conversion_rate=$(get_conversion_speed)
-	_file_duration=$(get_file_duration "$_input_file")
 
+	_conversion_rate=$(get_conversion_rate)
+	_file_duration=$(get_file_duration "$_input_file")
 	_final_duration=$(printf "%0.f / %0.f\n" "$_file_duration" "$_conversion_rate" | bc -l)
 
+	# return final duration
 	printf "%0.f" "$_final_duration"
 }
 
@@ -102,6 +104,8 @@ function time_perc
 	
 	_result=$(printf "%.6f / %.6f\n" "$_current_time" "$_total_lenght" | bc -l)
 	_percent=$(printf "%.6f * 100\n" "$_result" | bc -l)
+
+	# return percent
 	printf "%.0f\n" "$_percent"
 }
 
@@ -117,6 +121,8 @@ function bar_perc
 
 	_result=$(printf "%.6f / 100\n" "$_current_percent" | bc -l)
 	_bar_percent=$(printf "%.6f * %.6f\n" "$_result" "$_full_percent" | bc -l)
+
+	# return bar percent
 	printf "%.0f\n" "$_bar_percent"
 }
 
@@ -192,7 +198,7 @@ format_flac_to_mp3 "$input_file" &
 # 	printf "[ ERROR ] Could not define video lenght."
 # fi
 
-total_duration=$(converted_duration "$input_file")
+total_duration=$(get_converted_duration "$input_file")
 
 # main loop
 while true; do
