@@ -1,13 +1,13 @@
 #!/bin/ksh
 
 # needs to be started in background -> &
-function format_file
+function format_flac_to_mp3
 {
-	typeset _error
 	typeset _input_file
+	typeset _error
 
-	_error=$(mktemp)
 	_input_file="$1"
+	_error=$(mktemp)
 
 	touch /tmp/progress
 
@@ -17,7 +17,7 @@ function format_file
 	# catch error msg
 	if [[ -s "$_error" ]]; then
 		printf "\n[ ERROR ] Could not convert file.\n[ ERROR ] ErrMsg: "
-		#cat "$_error"
+		# add cosmetic tabs, to the error messages for readability
 		sed '2,$s/^/ 		  /' "$_error"
 
 		touch /tmp/err.lock
@@ -82,8 +82,8 @@ function converted_duration
 	typeset _input_file
 
 	_input_file="$1"
+	_conversion_rate=$(print_conversion_speed)
 	_file_duration=$(file_duration_lenght "$_input_file")
-	_conversion_rate="$2"
 
 	_final_duration=$(printf "%0.f / %0.f\n" "$_file_duration" "$_conversion_rate" | bc -l)
 
@@ -184,17 +184,9 @@ rm confrs.mp3  2> /dev/null
 
 
 # start conversion
-format_file "$input_file" & 
+format_flac_to_mp3 "$input_file" & 
 
 
-# debug information
-printf "==== input file: %s\n" "$input_file"
-
-conversion_rate=$(print_conversion_speed)
-printf "==== conversion rate: %s\n" "$conversion_rate"
-
-file_duration=$(file_duration_lenght "$input_file")
-printf "==== file duration: %s\n" "$file_duration"
 
 
 # # catch error
@@ -202,9 +194,7 @@ printf "==== file duration: %s\n" "$file_duration"
 # 	printf "[ ERROR ] Could not define video lenght."
 # fi
 
-converted_duration "$input_file" "$conversion_rate"
-total_duration=$(converted_duration "$input_file" "$conversion_rate")
-printf "==== total duration: %s\n" "$total_duration"
+total_duration=$(converted_duration "$input_file")
 
 # main loop
 while true; do
