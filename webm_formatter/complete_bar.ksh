@@ -49,28 +49,27 @@ function get_conversion_speed
 		fi
 	done
 
+	# return conversion rate
 	printf "%s" "$_conversion_rate"
 }
 
-function file_duration_lenght
+function get_file_duration
 {
 	typeset _input_file
-	typeset _duration_float
+	typeset _file_duration
 	typeset _error
 
 	_input_file="$1"
 
-	_duration_float=$(ffprobe -v quiet -show_entries format=duration -of csv=p=0 "$_input_file" 2> /dev/null)
-
-	# turn $duration into an integer from float
+	_file_duration=$(ffprobe -v quiet -show_entries format=duration -of csv=p=0 "$_input_file" 2> /dev/null)
 
 	# catch duration error
-	if [[ ! -n "$_duration_float" ]]; then
+	if [[ ! -n "$_file_duration" ]]; then
 		return 1
 	fi
 
-	# return
-	printf "%.0f" "$_duration_float" # Rounds to nearest integer
+	# return file duration
+	printf "%.0f" "$_file_duration" # Rounds to nearest integer
 }
 
 # calculate the final duration of the conversion
@@ -84,7 +83,7 @@ function converted_duration
 
 	_input_file="$1"
 	_conversion_rate=$(get_conversion_speed)
-	_file_duration=$(file_duration_lenght "$_input_file")
+	_file_duration=$(get_file_duration "$_input_file")
 
 	_final_duration=$(printf "%0.f / %0.f\n" "$_file_duration" "$_conversion_rate" | bc -l)
 
