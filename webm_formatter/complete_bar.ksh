@@ -41,8 +41,11 @@ function get_conversion_rate
 	# has to be checked in do-while loop for zero 
 	# due to a bug/ race condition, as this command sometimes 
 	# returns 0 on first run
+	#
+	# might be a bad idea, causing an endless loop on error.
+	# change to for loop, or break after N seconds
 	while true; do
-		_extract_line=$(cat "/tmp/progress.log" | grep speed | tail -n 1)
+		_extract_line=$(cat "/tmp/progress.log" | grep speed | tail -n 1 2>/dev/null)
 		_conversion_rate=$(echo $_extract_line | sed -n 's_.*=\([0-9]*\)\..*_\1_p')
 
 		if [[ _conversion_rate -ne 0 ]]; then
@@ -86,6 +89,11 @@ function get_converted_duration
 
 	_conversion_rate=$(get_conversion_rate)
 	_file_duration=$(get_file_duration "$_input_file")
+	# catch error
+	if [[ "$_file_duration" -eq 1 ]]; then
+		printf "[ ERROR ] Could not define video lenght."
+	fi
+
 	_final_duration=$(printf "%0.f / %0.f\n" "$_file_duration" "$_conversion_rate" | bc -l)
 
 	# return final duration
@@ -161,67 +169,66 @@ function draw_bar
 	done
 
 	# TODO creates bug, and draws to much white spaces
-	#
-	# _terminal_width=$(printf "%s - %s -20\n" "$_terminal_width" "${#_result}" | bc -l)
-	#
-	# for i in $(seq 1 "$_terminal_width"); do
-	# 	_result="${_result}${_space}"
-	# done
+	# _negative_space=$(printf "%s - %s - %s - 1\n" "$_terminal_width" "${#_bar}" "${#_header}" | bc -l)
+	# #
+	# if [[ "$_max_bar_length" -ne "$_current_bar_length" ]]; then
+	# 	for i in $(seq 1 "$_negative_space"); do
+	# 		_bar="${_bar}${_space}"
+	# 	done
+	# else
+	# 	printf "\r%s" "${_header}${_bar}${_end}" # print final bar
+	# fi
 
-	#printf "%s" "${_result}${_end}"
-
+	#printf "\r%s" "${_header}${_bar}${_end}" # print final bar
 
 	printf "\r%s" "${_header}${_bar}" # print final bar
 	tput el # reset bar/ clean buffer
 }
 
 
-input_file="Unreal.flac"
-file_path="$(pwd)/$input_file"
+# TODO: add conversion option to that function
+function format
+{
+	input_file="Unreal.flac"
 
-TIME=-1
+	TIME=-1
+	# remove leftover files, in case script crashed previously
+	rm /tmp/done_check.lock 2> /dev/null
 
-# remove leftover files, in case script crashed previously
-rm /tmp/done_check.lock 2> /dev/null
-
-# for testing
-rm confrs.mp3  2> /dev/null
-#touch /tmp/progress.log
-
-
-# start conversion
-format_flac_to_mp3 "$input_file" & 
+	# for testing
+	rm confrs.mp3  2> /dev/null
 
 
-# # catch error
-# if [[ "$_duration_float" -eq 1 ]]; then
-# 	printf "[ ERROR ] Could not define video lenght."
-# fi
+	# start conversion
+	format_flac_to_mp3 "$input_file" & 
 
-total_duration=$(get_converted_duration "$input_file")
+	total_duration=$(get_converted_duration "$input_file")
 
-# main loop
-while true; do
-	if [[ "$TIME" -ne "$total_duration" ]]; then
-		# check if process finished early
-		if [[ ! -e "/tmp/done_check.lock" ]];then
-			((TIME++))
-			# get current window width
-			time_percent=$(time_perc "$total_duration" "$TIME")
-			draw_bar "$time_percent"
+	# main loop
+	while true; do
+		if [[ "$TIME" -ne "$total_duration" ]]; then
+			# check if process finished early
+			if [[ ! -e "/tmp/done_check.lock" ]];then
+				((TIME++))
+				# get current window width
+				time_percent=$(time_perc "$total_duration" "$TIME")
+				draw_bar "$time_percent"
+			else
+				# if program finished early set bar to 100
+				# draw and finish
+				TIME=$total_duration
+				time_percent=100
+				draw_bar "$time_percent"
+			fi
 		else
-			# if program finished early set bar to 100
-			# draw and finish
-			TIME=$total_duration
-			time_percent=100
-			draw_bar "$time_percent"
+			printf "Done\n"
+			exit 0
 		fi
-	else
-		printf "Done\n"
-		exit 0
-	fi
 
-	sleep 1
-done
+		sleep 1
+	done
+}
+
+format
 
 
