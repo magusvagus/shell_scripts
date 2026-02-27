@@ -1,9 +1,12 @@
 #!/bin/ksh
 
+# script uses hledger to generate a financial report file
+# to be put in a chron job for automation
+
 _date="$(date)";
 _report="$(date '+%Y-%m-%d')-financial_report";
 touch ~/finance/weekly_reports/$_report;
-_path="$(printf '/home/ed/finance/weekly_reports/%s' $_report)";
+_path="$(printf '~/finance/weekly_reports/%s' $_report)";
 
 
 
