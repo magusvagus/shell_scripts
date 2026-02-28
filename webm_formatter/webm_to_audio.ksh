@@ -1,5 +1,8 @@
 #!/bin/ksh
 
+# conversion script for webm to flac, other conversion formats
+# are currently not supported
+
 # NOTE CHECK OUT COPROCESSES IN KSH
 #
 
