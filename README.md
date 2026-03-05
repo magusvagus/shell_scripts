@@ -10,4 +10,7 @@ List of scripts:
         Converting downloaded webm files to chosen
         audio format, using ffmpeg.
 
+    hledger financial report script.
+        Creates an financial report text file,
+        made for weekly automatic use via cron.
 
