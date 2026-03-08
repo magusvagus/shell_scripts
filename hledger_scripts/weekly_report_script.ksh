@@ -24,12 +24,12 @@ hledger stats >> $_path;
 printf "\n\n\n\n=================================\n" >> $_path;
 printf "====| Budget: food expenses |====\n" >> $_path;
 printf "=================================\n\n" >> $_path;
-hledger bal --budget expenses:food expenses:dorotka:food >> $_path;
+hledger bal --budget expenses:food >> $_path;
 
 printf "\n\n\n\n=======================\n" >> $_path;
 printf "====| Liabilities |====\n" >> $_path;
 printf "=======================\n\n" >> $_path;
-hledger bs assets:receivable:dorotka liabilities:dorotka >> $_path;
+hledger bs assets:receivable liabilities >> $_path;
 
 printf "\n\n\n\n============================\n" >> $_path;
 printf "====| Income statement |====\n" >> $_path;
