@@ -6,7 +6,7 @@ nickname="magusvagus"
 printf "[ !!! ] This script must be run inside the dir of the target git repo\n"
 printf "[ !!! ] This script requires an enabled ssh tocken of the target repo\n"
 
-printf "Current repos used:\n"
+printf "Current repos in use:\n"
 git remote -v
 
 printf "Want to add additional repositories? [y/n]"
@@ -19,6 +19,7 @@ elif [[ $ANSWER == "y" ]]; then
 	git remote set-url --add --push origin git@github.com:$nickname/$repo_name
 	git remote set-url --add --push origin git@gitlab.com:$nickname/$repo_name
 
+	printf "[ OK  ] Repositories added, project is ready to push\n"
 
 
 
