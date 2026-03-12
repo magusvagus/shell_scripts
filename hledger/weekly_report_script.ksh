@@ -19,32 +19,32 @@ printf "=====================================================\n\n" >> $_path;
 printf "\n\n\n\n======================\n" >> $_path;
 printf "===== Statistics =====\n" >> $_path;
 printf "======================\n\n" >> $_path;
-hledger stats >> $_path;
+hledger --pretty stats >> $_path;
 
 printf "\n\n\n\n=================================\n" >> $_path;
 printf "====| Budget: food expenses |====\n" >> $_path;
 printf "=================================\n\n" >> $_path;
-hledger bal --budget expenses:food >> $_path;
+hledger bal --pretty --budget expenses:food >> $_path;
 
 printf "\n\n\n\n=======================\n" >> $_path;
 printf "====| Liabilities |====\n" >> $_path;
 printf "=======================\n\n" >> $_path;
-hledger bs assets:receivable liabilities >> $_path;
+hledger --pretty bs assets:receivable liabilities >> $_path;
 
 printf "\n\n\n\n============================\n" >> $_path;
 printf "====| Income statement |====\n" >> $_path;
 printf "============================\n\n" >> $_path;
-hledger is >> $_path;
+hledger --pretty is >> $_path;
 
 printf "\n\n\n\n=========================\n" >> $_path;
 printf "====| Balance sheet |====\n" >> $_path;
 printf "=========================\n\n" >> $_path;
-hledger bs >> $_path;
+hledger --pretty bs >> $_path;
 
 printf "\n\n\n\n=====================\n" >> $_path;
 printf "====| Cash flow |====\n" >> $_path;
 printf "=====================\n\n" >> $_path;
-hledger cf >> $_path;
+hledger --pretty cf >> $_path;
 
 printf "\n\n\n\n" >> $_path;
 
